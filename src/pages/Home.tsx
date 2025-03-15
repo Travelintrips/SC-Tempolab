@@ -152,9 +152,9 @@ function BookingModal({ facility, onClose, onBook }: BookingModalProps) {
 
   const generateTimeSlots = (hours: OperatingHours, bookings: ExistingBooking[]) => {
     if (!hours.is_open) {
-      setTimeSlots([]);
-      setSelectedTime('');
-      return;
+        setTimeSlots([]);
+        setSelectedTime('');
+        return;
     }
 
     const slots: TimeSlot[] = [];
@@ -164,33 +164,41 @@ function BookingModal({ facility, onClose, onBook }: BookingModalProps) {
     const endHour = parseInt(closeHour);
 
     const bookedRanges = bookings.map(booking => ({
-      start: new Date(booking.start_time),
-      end: new Date(booking.end_time)
+        start: new Date(booking.start_time),
+        end: new Date(booking.end_time)
     }));
 
     const now = new Date();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const isToday = selectedDate.getTime() === today.getTime();
+   // const isToday = selectedDate.getTime() === today.getTime();
+const selectedDateNoTime = new Date(selectedDate);
+    selectedDateNoTime.setHours(0, 0, 0, 0);
+    const isToday = selectedDateNoTime.getTime() === today.getTime(); 
+  //  console.log("Current Time:", now.toLocaleString()); // Debugging
+  //  console.log("Selected Date:", selectedDate.toLocaleString()); 
 
+const nowRounded = new Date();
+nowRounded.setMinutes(0, 0, 0);
+    
     for (let hour = startHour; hour < endHour; hour++) {
-      const slotTime = `${hour.toString().padStart(2, '0')}:00`;
-      const slotDate = new Date(selectedDate);
-      slotDate.setHours(hour, 0, 0, 0);
-
+        const slotTime = `${hour.toString().padStart(2, '0')}:00`;
+        const slotDate = new Date(selectedDate);
+        slotDate.setHours(hour, 0, 0, 0);      
       // Skip past times for today
-      if (isToday && slotDate < now) {
-        continue;
-      }
-
+      if (isToday && slotDate < new Date(nowRounded.getTime() + 60 * 60 * 1000)) {
+       //     console.log(`Slot ${slotTime} diblokir karena kurang dari 1 jam dari sekarang.`);
+            continue;
+        }
+      
       const isAvailable = !bookedRanges.some(range => {
-        return slotDate >= range.start && slotDate < range.end;
-      });
+            return slotDate >= range.start && slotDate < range.end;
+        });
 
       slots.push({
-        time: slotTime,
-        available: isAvailable
-      });
+            time: slotTime,
+            available: isAvailable
+        });
     }
 
     setTimeSlots(slots);
